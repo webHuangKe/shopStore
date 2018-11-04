@@ -41,4 +41,7 @@ export default {
   color: #2d8cf0 ;
   background: #fff !important;
 }
+.ivu-menu-dark{
+  background-color: #001529;
+}
 </style>
