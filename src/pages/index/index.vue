@@ -21,7 +21,9 @@ export default {
   },
   methods: {
     onSecondMenuFlag (data) {
+      if (~~data.flag === ~~this.ShowFlag) return  
       this.ShowFlag = data.flag
+      this.$store.state.IsShowSecondFlag = data.flag
     }
   }
 }
@@ -41,7 +43,8 @@ export default {
     }
     .c-content-main{
         flex: 1;
-        min-height: 100%;
+        height: 100vh;
+        overflow: hidden;
         background-color: #f8f8f8;
     }
 }

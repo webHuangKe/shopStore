@@ -3,5 +3,6 @@ export default {
     BreadcrumbList: [], // 面包屑数据
     BreadcrumbFlag: true, // 是否显示面包屑
     ThirdMenusList: [] // 三级导航数据
-  }
+  },
+  IsShowSecondFlag: false // 是否显示二级菜单
 }

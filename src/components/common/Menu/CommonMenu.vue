@@ -52,7 +52,6 @@ export default {
     // 点击二级菜单的数据
     GetSecoudItemData (item) {
       this.currentSecondItem = item.name
-      this.ChangePageHeaderInfo(item)
       this.$router.push({name: item.name})
     },
     // 获取二级菜单是数据
@@ -62,30 +61,11 @@ export default {
       })
       if (item) {
         let childrenList = item.children
-        this.secondMenu = childrenList && childrenList.length > 0 ? childrenList : []
+        this.secondMenu = childrenList && childrenList.length > 1 ? childrenList : []
         this.$emit('onSecondMenuFlag', {flag: this.secondMenu.length})
-        if (ops && ops.NoGetSecond) {
-          let val = {}
-          if (childrenList) {
-            let currentSecondItem = this.currentSecondItem
-            val = childrenList.find(val => {
-              return val.name === currentSecondItem
-            })
-          }
-          this.ChangePageHeaderInfo(val)
-          return
-        }
+        if (ops && ops.NoGetSecond) return
         let firstItem = this.secondMenu[0]
-        this.ChangePageHeaderInfo(firstItem)
         this.currentSecondItem = firstItem && firstItem.name
-      }
-    },
-    ChangePageHeaderInfo (item) {
-      let BreadcrumbFlag = item.meta.BreadcrumbFlag
-      this.$store.state.PageHeaderInfo = {
-        BreadcrumbList: BreadcrumbFlag ? (item.meta.breadcrumbList || []) : [],
-        BreadcrumbFlag: BreadcrumbFlag,
-        ThirdMenusList: !BreadcrumbFlag ? item.children : []
       }
     }
   }

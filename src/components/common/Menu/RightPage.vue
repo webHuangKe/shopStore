@@ -22,8 +22,10 @@ export default {
 }
  .c-content-t{
     margin: 16px 16px;
+    position: relative;
     box-sizing: border-box;
-    min-height: calc(100% - 80px);
+    height: calc(100% - 80px);
+    overflow-x: auto;
     background-color: #fff;
 }
 </style>

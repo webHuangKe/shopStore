@@ -7,7 +7,7 @@
                     <router-link
                                 :to="{name: val.name}"
                                 :key="idx"
-                                v-if="val.path"
+                                v-if="val.name"
                     >
                         {{val.title}}
                     </router-link>
@@ -16,16 +16,10 @@
                         {{val.title}}
                     </span>
                 </BreadcrumbItem>
-                <!--当前页面名称加到最后-->
-                <BreadcrumbItem>
-                    <span>
-                        {{$route.meta.title}}
-                    </span>
-                </BreadcrumbItem>
             </Breadcrumb>
         </div>
         <Tabs :animated="false" @on-click="onTabClick" :value="CurrentItemName">
-            <TabPane :label="item.meta.title" :name="item.name" v-for="(item, index) in ThirdMenusList" :key="index" ></TabPane>
+            <TabPane :label="item.title" :name="item.name" v-for="(item, index) in ThirdMenusList" :key="index" ></TabPane>
         </Tabs>
     </div>
 </template>
@@ -44,6 +38,11 @@ export default {
       return this.$store.state.PageHeaderInfo.BreadcrumbList
     },
     ThirdMenusList () {
+      let PageHeaderInfo = this.$store.state.PageHeaderInfo
+      let ThirdMenusList = PageHeaderInfo.ThirdMenusList
+      if (ThirdMenusList.length && !PageHeaderInfo.BreadcrumbFlag) {
+        this.CurrentItemName = this.$route.name
+      }
       return this.$store.state.PageHeaderInfo.ThirdMenusList
     }
   },

@@ -2,6 +2,14 @@ import Main from '@/pages/index/index'
 import RightPage from '@/components/common/Menu/RightPage'
 const routes = [
   {
+    path: '/login',
+    name: 'Login',
+    meta: {
+      title: '登录注册'
+    },
+    component: () => import('@/pages/login/Login')
+  },
+  {
     path: '/',
     name: 'Home',
     meta: {
@@ -59,7 +67,7 @@ const routes = [
                 }
               ]
             },
-            component: () => import('@/pages/product/ProductList')
+            component: () => import('@/pages/product/AddProduct')
           },
           {
             path: 'updateProduct',
@@ -72,12 +80,12 @@ const routes = [
                   name: 'ProductList'
                 },
                 {
-                  title: '优惠券',
+                  title: '编辑产品',
                   name: 'UpdateProduct'
                 }
               ]
             },
-            component: () => import('@/pages/product/ProductList')
+            component: () => import('@/pages/product/AddProduct')
           }
         ]
       }
@@ -132,14 +140,14 @@ const routes = [
             name: 'CouponManage',
             meta: {
               title: '优惠券管理',
-              breadcrumbList: [
-                {
-                  title: '优惠券',
-                  name: 'Coupon'
-                },
+              thirdMenusList: [
                 {
                   title: '优惠券管理',
                   name: 'CouponManage'
+                },
+                {
+                  title: '优惠券领取记录',
+                  name: 'CouponRecords'
                 }
               ]
             },
@@ -150,10 +158,10 @@ const routes = [
             name: 'CouponRecords',
             meta: {
               title: '优惠券领取记录',
-              breadcrumbList: [
+              thirdMenusList: [
                 {
-                  title: '优惠券',
-                  name: 'Coupon'
+                  title: '优惠券管理',
+                  name: 'CouponManage'
                 },
                 {
                   title: '优惠券领取记录',
