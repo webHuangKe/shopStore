@@ -1,16 +1,26 @@
 <template>
  <div class="c-menu-wrapper">
      <div class="c-menu">
-         <Menu :theme="theme3" :active-name="currentNavName" width="180" @on-select="GetMenuData">
-            <MenuItem :name="item.name" v-for="(item, index) in menuList" :key="index">
-                <Icon type="md-heart" />
-                {{item.title}}
-            </MenuItem>
-        </Menu>
+         <div class="c-logo">
+           <div class="c-icon" @click="GetMenuData('Home', true)">
+             <Icon type="md-home"  />
+           </div>
+         </div>
+         <ul class="c-menu-list">
+           <li class="c-menu-item" :class="{'active-item': currentNavName === item.name}" @click="GetMenuData(item.name)" v-for="(item, index) in menuList" :key="index">
+              <Icon type="md-heart" size="18"/>
+              <span class="c-title">{{item.meta.title}}</span>
+           </li>
+         </ul>
     </div>
     <transition name="slide-fade">
         <ul class="c-menu-two" v-if="secondMenu.length">
-            <li class="c-menu-item" v-for="(item, index) in secondMenu" :key="index">{{item.title}}</li>
+            <li
+            class="c-menu-item"
+            :class="{'active-item': currentSecondItem === item.name}"
+            v-for="(item, index) in secondMenu"
+            @click="GetSecoudItemData(item)"
+            :key="index">{{item.meta.title}}</li>
         </ul>
    </transition>
  </div>
@@ -20,30 +30,62 @@ import routes from '@/router/router'
 export default {
   data () {
     return {
-      theme3: 'dark',
       menuList: routes,
       currentNavName: 'Home',
-      secondMenu: []
+      secondMenu: [],
+      currentSecondItem: ''
     }
   },
   created () {
-    console.log(this.$route, 'sss')
-    this.currentNavName = this.$route.matched[0].name
-    this.GetSecondMenu(this.currentNavName)
+    let routeInfo = this.$route.matched
+    this.currentNavName = routeInfo[0].name
+    this.currentSecondItem = routeInfo[1].name
+    this.GetSecondMenu(this.currentNavName, {NoGetSecond: true})
   },
   methods: {
+    // 跳转一级菜单
     GetMenuData (name) {
+      this.currentNavName = name
       this.$router.push({name: name})
       this.GetSecondMenu(name)
     },
-    GetSecondMenu (name) {
+    // 点击二级菜单的数据
+    GetSecoudItemData (item) {
+      this.currentSecondItem = item.name
+      this.ChangePageHeaderInfo(item)
+      this.$router.push({name: item.name})
+    },
+    // 获取二级菜单是数据
+    GetSecondMenu (name, ops) {
       let item = routes.find(item => {
         return item.name === name
       })
       if (item) {
         let childrenList = item.children
-        this.secondMenu = childrenList && childrenList.length > 1 ? childrenList : []
+        this.secondMenu = childrenList && childrenList.length > 0 ? childrenList : []
         this.$emit('onSecondMenuFlag', {flag: this.secondMenu.length})
+        if (ops && ops.NoGetSecond) {
+          let val = {}
+          if (childrenList) {
+            let currentSecondItem = this.currentSecondItem
+            val = childrenList.find(val => {
+              return val.name === currentSecondItem
+            })
+          }
+          this.ChangePageHeaderInfo(val)
+          return
+        }
+        let firstItem = this.secondMenu[0]
+        this.ChangePageHeaderInfo(firstItem)
+        this.currentSecondItem = firstItem && firstItem.name
+      }
+    },
+    ChangePageHeaderInfo (item) {
+      let BreadcrumbFlag = item.meta.BreadcrumbFlag
+      this.$store.state.PageHeaderInfo = {
+        BreadcrumbList: BreadcrumbFlag ? (item.meta.breadcrumbList || []) : [],
+        BreadcrumbFlag: BreadcrumbFlag,
+        ThirdMenusList: !BreadcrumbFlag ? item.children : []
       }
     }
   }
@@ -66,11 +108,30 @@ export default {
       text-align: center;
       cursor: pointer;
       &:hover{
-          background-color: #f4f4f4;
-          color: #2d8cf0;
+        background-color: #f4f4f4;
+        color: #2d8cf0;
+      }
+      &.active-item{
+        color: #2d8cf0;
       }
     }
   }
+}
+::-webkit-scrollbar{
+  width: 1px;
+  height: 0px;
+  background-color: #fff;
+}
+/*定义滚动条轨道 内阴影+圆角*/
+::-webkit-scrollbar-track{
+  border-radius: 50px;
+  background-color: #fff;
+}
+/*定义滑块 内阴影+圆角*/
+::-webkit-scrollbar-thumb{
+  border-radius: 50px;
+  background-color: #fff;
+  margin-right:2px;
 }
 .c-menu{
     position: absolute;
@@ -80,8 +141,50 @@ export default {
     width: 180px;
     height: 100vh;
     background: #001529;
-    overflow: hidden;
     z-index: 1;
+    .c-menu-list{
+      width: 100%;
+      .c-menu-item{
+        height: 48px;
+        display: flex;
+        align-items: center;
+        padding-left: 16px;
+        box-sizing: border-box;
+        width: 100%;
+        color: #f4f4f4;
+        transition: all .3s;
+        cursor: pointer;
+        .c-title{
+          margin-left: 14px;
+        }
+        &:hover{
+          color: #fff;
+          background-color: rgba(157, 175, 192, 0.8);
+        }
+        &.active-item{
+          color: #2d8cf0;
+          background-color: #fff;
+        }
+      }
+    }
+    .c-logo{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 0;
+      font-size: 26px;
+      .c-icon{
+        width: 40px;
+        height: 40px;
+        color: #2d8cf0;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #fff;
+        cursor: pointer;
+      }
+    }
 }
 /* 可以设置不同的进入和离开动画 */
 /* 设置持续时间和动画函数 */

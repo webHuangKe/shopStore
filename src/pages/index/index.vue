@@ -21,7 +21,7 @@ export default {
   },
   methods: {
     onSecondMenuFlag (data) {
-      this.ShowFlag = !!data.flag
+      this.ShowFlag = data.flag
     }
   }
 }
@@ -40,7 +40,9 @@ export default {
         }
     }
     .c-content-main{
-        flex: 1
+        flex: 1;
+        min-height: 100%;
+        background-color: #f8f8f8;
     }
 }
 </style>

@@ -11,24 +11,8 @@ export default {
 </script>
 
 <style>
-::-webkit-scrollbar
-{
-    width: 6px;
-    height: 0px;
-    background-color: #F5F5F5;
-}
-/*定义滚动条轨道 内阴影+圆角*/
-::-webkit-scrollbar-track
-{
-    border-radius: 50px;
-    background-color: #Fff;
-}
-/*定义滑块 内阴影+圆角*/
-::-webkit-scrollbar-thumb
-{
-    border-radius: 50px;
-    background-color: #c8c8c8;
-    margin-right:2px;
+.common-color{
+  color: #2d8cf0;
 }
 .ivu-menu-dark.ivu-menu-vertical .ivu-menu-item-active:not(.ivu-menu-submenu), .ivu-menu-dark.ivu-menu-vertical .ivu-menu-submenu-title-active:not(.ivu-menu-submenu){
   /* color: skyblue; */
@@ -43,5 +27,12 @@ export default {
 }
 .ivu-menu-dark{
   background-color: #001529;
+}
+.c-third-menus .ivu-tabs-bar, .remove-border .ivu-table-wrapper{
+  border: 0
+}
+.c-third-menus .ivu-tabs-nav{
+  height: 48px;
+  line-height: 2;
 }
 </style>
