@@ -5,7 +5,8 @@ const routes = [
     path: '/login',
     name: 'Login',
     meta: {
-      title: '登录注册'
+      title: '登录注册',
+      hideMenuFlag: true
     },
     component: () => import('@/pages/login/Login')
   },

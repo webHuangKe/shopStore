@@ -21,7 +21,7 @@ export default {
   },
   methods: {
     onSecondMenuFlag (data) {
-      if (~~data.flag === ~~this.ShowFlag) return  
+      if (~~data.flag === ~~this.ShowFlag) return
       this.ShowFlag = data.flag
       this.$store.state.IsShowSecondFlag = data.flag
     }

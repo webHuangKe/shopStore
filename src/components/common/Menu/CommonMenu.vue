@@ -8,7 +8,7 @@
          </div>
          <ul class="c-menu-list">
            <li class="c-menu-item" :class="{'active-item': currentNavName === item.name}" @click="GetMenuData(item.name)" v-for="(item, index) in menuList" :key="index">
-              <Icon type="md-heart" size="18"/>
+              <!-- <Icon type="md-heart" size="18"/> -->
               <span class="c-title">{{item.meta.title}}</span>
            </li>
          </ul>
@@ -26,11 +26,10 @@
  </div>
 </template>
 <script>
-import routes from '@/router/router'
 export default {
   data () {
     return {
-      menuList: routes,
+      menuList: this.$store.state.MenuList,
       currentNavName: 'Home',
       secondMenu: [],
       currentSecondItem: ''
@@ -38,8 +37,8 @@ export default {
   },
   created () {
     let routeInfo = this.$route.matched
-    this.currentNavName = routeInfo[0].name
-    this.currentSecondItem = routeInfo[1].name
+    this.currentNavName = routeInfo[0] && routeInfo[0].name
+    this.currentSecondItem = routeInfo[1] && routeInfo[1].name
     this.GetSecondMenu(this.currentNavName, {NoGetSecond: true})
   },
   methods: {
@@ -56,7 +55,7 @@ export default {
     },
     // 获取二级菜单是数据
     GetSecondMenu (name, ops) {
-      let item = routes.find(item => {
+      let item = this.menuList.find(item => {
         return item.name === name
       })
       if (item) {

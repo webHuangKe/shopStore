@@ -3,3 +3,22 @@
   align-items: center;
   justify-content: center;
 }
+.wrapper {
+  padding: 12px 24px;
+  box-sizing: border-box;
+}
+.c-table-wrapper {
+  padding: 12px 0;
+}
+.c-page-wrapper {
+  padding: 12px 0;
+}
+.commonInp {
+  width: 300px;
+}
+.commonColor {
+  color: #2d8cf0;
+}
+.commonBg {
+  background-color: #2d8cf0;
+}

@@ -16,30 +16,30 @@
     </Form>
 </template>
 <script>
-    export default {
-        props: ['width'],
-        data () {
-            return {
-                formValidate: {
-                    name: '',
-                    mail: '',
-                    city: ''
-                }
-            }
-        },
-        methods: {
-            handleSubmit (name) {
-                this.$refs[name].validate((valid) => {
-                    if (valid) {
-                        this.$Message.success('Success!');
-                    } else {
-                        this.$Message.error('Fail!');
-                    }
-                })
-            },
-            handleReset (name) {
-                this.$refs[name].resetFields();
-            }
-        }
+export default {
+  props: ['width'],
+  data () {
+    return {
+      formValidate: {
+        name: '',
+        mail: '',
+        city: ''
+      }
     }
+  },
+  methods: {
+    handleSubmit (name) {
+      this.$refs[name].validate((valid) => {
+        if (valid) {
+          this.$Message.success('Success!')
+        } else {
+          this.$Message.error('Fail!')
+        }
+      })
+    },
+    handleReset (name) {
+      this.$refs[name].resetFields()
+    }
+  }
+}
 </script>

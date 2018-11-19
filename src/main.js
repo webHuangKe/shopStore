@@ -12,8 +12,10 @@ import store from './vuex/store'
 Vue.config.productionTip = false
 Vue.use(iView)
 axios.defaults.withCredentials = true
-axios.defaults.baseURL = document.location.protocol + '//' + location.hostname
-Vue.prototype.commonUrl = document.location.protocol + '//' + location.hostname
+axios.defaults.baseURL = 'http://localhost:7001'
+Vue.prototype.commonUrl = 'http://localhost:7001'
+// axios.defaults.baseURL = document.location.protocol + '//' + location.hostname
+// Vue.prototype.commonUrl = document.location.protocol + '//' + location.hostname
 Vue.prototype.$http = axios
 /**
  *

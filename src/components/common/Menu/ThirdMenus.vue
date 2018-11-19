@@ -18,31 +18,18 @@
                 </BreadcrumbItem>
             </Breadcrumb>
         </div>
-        <Tabs :animated="false" @on-click="onTabClick" :value="CurrentItemName">
+        <Tabs :animated="false" @on-click="onTabClick" :value="$store.state.CurrentThirdItemName">
             <TabPane :label="item.title" :name="item.name" v-for="(item, index) in ThirdMenusList" :key="index" ></TabPane>
         </Tabs>
     </div>
 </template>
 <script>
 export default {
-  data () {
-    return {
-      CurrentItemName: ''
-    }
-  },
-  created () {
-    console.log(this.$route)
-  },
   computed: {
     breadcrumbList () {
       return this.$store.state.PageHeaderInfo.BreadcrumbList
     },
     ThirdMenusList () {
-      let PageHeaderInfo = this.$store.state.PageHeaderInfo
-      let ThirdMenusList = PageHeaderInfo.ThirdMenusList
-      if (ThirdMenusList.length && !PageHeaderInfo.BreadcrumbFlag) {
-        this.CurrentItemName = this.$route.name
-      }
       return this.$store.state.PageHeaderInfo.ThirdMenusList
     }
   },

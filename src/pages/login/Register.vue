@@ -15,29 +15,29 @@
 </template>
 
 <script>
-    export default {
-        props: ['width'],
-        data() {
-            return {
-                 formValidate: {
-                    name: '',
-                    password: ''
-                },
-            }
-        },
-        methods: {
-            handleSubmit(name) {
-                this.$refs[name].validate((valid) => {
-                    if (valid) {
-                        this.$Message.success('Success!');
-                    } else {
-                        this.$Message.error('Fail!');
-                    }
-                })
-            }
-        }
-        
+export default {
+  props: ['width'],
+  data () {
+    return {
+      formValidate: {
+        name: '',
+        password: ''
+      }
     }
+  },
+  methods: {
+    handleSubmit (name) {
+      this.$refs[name].validate((valid) => {
+        if (valid) {
+          this.$Message.success('Success!')
+        } else {
+          this.$Message.error('Fail!')
+        }
+      })
+    }
+  }
+
+}
 </script>
 
 <style scoped>

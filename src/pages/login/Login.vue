@@ -18,24 +18,24 @@
     </div>
 </template>
 <script>
-  import Register from './Register'
-  import SignIn from './SignIn'
-    export default {
-        data () {
-            return {
-              currentItem: 0
-            }
-        },
-        methods: {
-            changeCurrentItem(index) {
-              this.currentItem = index  
-            }
-        },
-        components: {
-            Register,
-            SignIn
-        }
+import Register from './Register'
+import SignIn from './SignIn'
+export default {
+  data () {
+    return {
+      currentItem: 0
     }
+  },
+  methods: {
+    changeCurrentItem (index) {
+      this.currentItem = index
+    }
+  },
+  components: {
+    Register,
+    SignIn
+  }
+}
 </script>
 <style lang="less" scoped>
 .login-wrapper{
@@ -80,4 +80,3 @@
     }
 }
 </style>
-
