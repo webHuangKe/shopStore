@@ -11,9 +11,10 @@ import './common/css/common.less'
 import store from './vuex/store'
 Vue.config.productionTip = false
 Vue.use(iView)
-axios.defaults.withCredentials = true
 axios.defaults.baseURL = 'http://localhost:7001'
+axios.defaults.withCredentials = false
 Vue.prototype.commonUrl = 'http://localhost:7001'
+
 // axios.defaults.baseURL = document.location.protocol + '//' + location.hostname
 // Vue.prototype.commonUrl = document.location.protocol + '//' + location.hostname
 Vue.prototype.$http = axios
@@ -23,8 +24,8 @@ Vue.prototype.$http = axios
  *  data：发送的数据
  *  header 发送头
  */
-Vue.prototype.$httpPost = function ({url, data = {}, header = {}}) {
-  return axios.post(url, qs.stringify(data), header)
+Vue.prototype.$httpPost = function ({url, data = {}, config = {}}) {
+  return axios.post(url, qs.stringify(data), config)
 }
 /* eslint-disable no-new */
 new Vue({

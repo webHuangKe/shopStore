@@ -7,7 +7,9 @@
              <FormItem label="产品主图：" prop="imageDataFileArray" >
                 <div class="product-edit-row">
                     <p class="color9 line-32">最多上传10张800*800后缀为JPG、PNG的图片，图片限制大小5M，拖拽图片可以调整图片的位置。</p>
-                    <ImageDragable v-model="formValidate.imageDataFileArray" :multiple="true" :format="['jpg', 'JPEG', 'png']" :picture-number="10" :max-size="1024 * 5" @onHandleFormatError="onHandleFormatError"></ImageDragable>
+                    <ImageDragable
+                    ref="ImageDragableWrapper"
+                    v-model="imageDataFileArray" :multiple="true" :format="['jpg', 'JPEG', 'png']" :picture-number="10" :max-size="1024 * 5" @onHandleFormatError="onHandleFormatError"></ImageDragable>
                 </div>
             </FormItem>
             <FormItem label="商品价格：" prop="mail">
@@ -39,15 +41,15 @@ export default {
           key: 'saveData'
         }
       ],
+      imageDataFileArray: [],
       formValidate: {
-        imageDataFileArray: [],
         name: '',
         price: 0,
         reserve: 1,
         desc: ''
       },
       ruleValidate: {
-        
+
       }
     }
   },
@@ -57,8 +59,8 @@ export default {
     CommonBottom
   },
   mounted () {
-    this.getProductInfo()
-    console.log(this.$refs.editorWrapper, 'this.$refs.editorWrapper')
+    this.getProductInfo(this.$route.query.id)
+    console.log(this.$route.query, '.$route.query')
   },
   methods: {
     // 点击底部按钮
@@ -68,7 +70,10 @@ export default {
     handleSubmit (name) {
       this.$refs[name].validate((valid) => {
         if (valid) {
-          this.$httpPost({url: '/createdProduct', data: this.formValidate}).then(res => {
+          let formValidate = this.formValidate
+          formValidate.imgList = this.$refs['ImageDragableWrapper'].imageShowArray
+          formValidate.content = this.$refs['editorWrapper'].content
+          this.$httpPost({url: '/createdProduct', data: formValidate}).then(res => {
             console.log(res, 9999999999)
           })
         } else {
@@ -82,8 +87,9 @@ export default {
     onHandleFormatError () {
 
     },
-    getProductInfo () {
-      this.$http.get('/').then(res => {
+    getProductInfo (id) {
+      if (!id) return
+      this.$http.get('/productItem?id=' + id).then(res => {
         console.log(res, 66666666)
       }).catch(err => {
         console.log(err, 4444444444)
