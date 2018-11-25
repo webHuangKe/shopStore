@@ -6,5 +6,7 @@ export default {
   },
   IsShowSecondFlag: false, // 是否显示二级菜单
   CurrentThirdItemName: '',
-  MenuList: []
+  MenuList: [],
+  commonLoading: false, // 全局loading
+  classProductList: [] // 产品分类
 }

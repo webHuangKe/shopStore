@@ -13,7 +13,8 @@ Vue.config.productionTip = false
 Vue.use(iView)
 axios.defaults.baseURL = 'http://localhost:7001'
 axios.defaults.withCredentials = false
-Vue.prototype.commonUrl = 'http://localhost:7001'
+
+Vue.prototype.commonUrl = 'http://localhost:7001/'
 
 // axios.defaults.baseURL = document.location.protocol + '//' + location.hostname
 // Vue.prototype.commonUrl = document.location.protocol + '//' + location.hostname

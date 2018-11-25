@@ -60,7 +60,7 @@ export default {
       })
       if (item) {
         let childrenList = item.children
-        this.secondMenu = childrenList && childrenList.length > 1 ? childrenList : []
+        this.secondMenu = childrenList && childrenList.length ? childrenList : []
         this.$emit('onSecondMenuFlag', {flag: this.secondMenu.length})
         if (ops && ops.NoGetSecond) return
         let firstItem = this.secondMenu[0]

@@ -2,8 +2,8 @@
     <!-- 底部组件 -->
     <div class="btn-wrapper">
         <div style="height: 50px"></div>
-        <div :style="{left: $store.state.IsShowSecondFlag ? 280 + 'px' : 196 + 'px'}" class="b-wrapper ">
-           <Button @click="$emit('on-click', item)" v-for="(item, index) in btnList" :key="index" type="primary">{{item.btnName}}</Button>
+        <div :style="{left: $store.state.IsShowSecondFlag ? 296 + 'px' : 196 + 'px'}" class="b-wrapper ">
+           <Button @click="$emit('on-click', item)" v-for="(item, index) in btnList" :key="index" type="primary" :loading="item.loading">{{item.btnName}}</Button>
         </div>
     </div>
 </template>

@@ -23,6 +23,7 @@ export default {
     onSecondMenuFlag (data) {
       if (~~data.flag === ~~this.ShowFlag) return
       this.ShowFlag = data.flag
+      console.log(data.flag, 'data.flag')
       this.$store.state.IsShowSecondFlag = data.flag
     }
   }

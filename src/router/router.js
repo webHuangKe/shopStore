@@ -89,6 +89,33 @@ const routes = [
             component: () => import('@/pages/product/AddProduct')
           }
         ]
+      },
+      {
+        path: '/productClass',
+        name: 'ProductClass',
+        meta: {
+          title: '产品分类',
+          BreadcrumbFlag: true
+        },
+        component: RightPage,
+        redirect: { name: 'ProductClassList' },
+        children: [
+          {
+            path: 'productClassList',
+            name: 'ProductClassList',
+            meta: {
+              title: '产品分类',
+              BreadcrumbFlag: true,
+              breadcrumbList: [
+                {
+                  title: '产品分类',
+                  name: 'ProductClassList'
+                }
+              ]
+            },
+            component: () => import('@/pages/product/ProductClass')
+          }
+        ]
       }
     ]
   },
@@ -171,6 +198,43 @@ const routes = [
               ]
             },
             component: () => import('@/pages/marking/coupon/CouponRecords')
+          }
+        ]
+      }
+    ]
+  },
+  {
+    path: '/order',
+    name: 'Order',
+    meta: {
+      title: '订单'
+    },
+    redirect: { name: 'OrderList' },
+    component: Main,
+    children: [
+      {
+        path: 'orderList',
+        name: 'OrderList',
+        meta: {
+          title: '订单',
+          BreadcrumbFlag: true
+        },
+        component: RightPage,
+        redirect: {name: 'OrderListManage'},
+        children: [
+          {
+            path: 'orderListManage',
+            name: 'OrderListManage',
+            meta: {
+              title: '订单',
+              breadcrumbList: [
+                {
+                  title: '订单',
+                  name: 'OrderListManage'
+                }
+              ]
+            },
+            component: () => import('@/pages/order/OrderList')
           }
         ]
       }

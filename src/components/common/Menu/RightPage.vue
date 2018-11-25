@@ -2,6 +2,10 @@
     <div class="c-main-content">
         <ThirdMenus></ThirdMenus>
         <div class="c-content-t">
+             <Spin v-if="$store.state.commonLoading" fix>
+                <Icon type="ios-loading" size=30 class="demo-spin-icon-load"></Icon>
+                <div>加载中...</div>
+            </Spin>
             <router-view/>
         </div>
     </div>

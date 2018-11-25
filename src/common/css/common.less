@@ -22,3 +22,33 @@
 .commonBg{
     background-color: #2d8cf0
 }
+.commonHover{
+    color: #2d8cf0;
+    &:hover{
+        color: blue
+    }
+}
+.tb-product-item{
+    padding: 10px 0;
+}
+.demo-spin-icon-load{
+    animation: ani-demo-spin 1s linear infinite;
+}
+@keyframes ani-demo-spin {
+    from { transform: rotate(0deg);}
+    50%  { transform: rotate(180deg);}
+    to   { transform: rotate(360deg);}
+}
+.demo-spin-col{
+    height: 100px;
+    position: relative;
+    border: 1px solid #eee;
+}
+.vertical-center-modal{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .ivu-modal{
+        top: 0;
+    }
+}

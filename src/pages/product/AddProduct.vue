@@ -2,7 +2,7 @@
     <div class="wrapper">
         <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="100">
             <FormItem label="商品名称：" prop="name">
-                <Input class="commonInp" v-model="formValidate.name" placeholder="请输入商品名称"></Input>
+                <Input class="commonInp" v-model="formValidate.gname" placeholder="请输入商品名称"></Input>
             </FormItem>
              <FormItem label="产品主图：" prop="imageDataFileArray" >
                 <div class="product-edit-row">
@@ -15,11 +15,29 @@
             <FormItem label="商品价格：" prop="mail">
                 <InputNumber class="commonInp" :precision="0"  :min="0" v-model="formValidate.price" placeholder="请输入商品价格"></InputNumber>
             </FormItem>
+            <FormItem label="分类：">
+              <Select v-model="formValidate.productClass" style="width:200px">
+                <Option v-for="item in classProductList" :value="item.cid" :key="item.cid">{{ item.cname }}</Option>
+              </Select>
+            </FormItem>
             <FormItem label="库存：">
               <InputNumber class="commonInp"  :precision="0"  :min="0" v-model="formValidate.reserve" placeholder="请输入库存"></InputNumber>
             </FormItem>
+            <FormItem label="排序：">
+              <InputNumber class="commonInp" :max="999" :precision="0"  :min="0" v-model="formValidate.rank" ></InputNumber>
+            </FormItem>
+            <FormItem label="状态：">
+              <RadioGroup v-model="formValidate.status">
+                <Radio label="1">
+                  发布
+                </Radio>
+                <Radio label="0">
+                  不发布
+                </Radio>
+              </RadioGroup>
+            </FormItem>
             <FormItem label="简介：">
-               <Input class="commonInp" v-model="formValidate.desc" type="textarea" :rows="4" placeholder="Enter something..." />
+               <Input class="commonInp" v-model="formValidate.desc" type="textarea" :rows="4" placeholder="简介" />
             </FormItem>
             <FormItem label="内容：" >
                 <Editor ref="editorWrapper"></Editor>
@@ -32,25 +50,36 @@
 import ImageDragable from '@/components/common/ImageDragable/ImageDragable.vue'
 import Editor from '@/components/common/Editor/Editor.vue'
 import CommonBottom from '@/components/common/Bottom/CommonBottom.vue'
+import { mapState, mapActions } from 'vuex'
 export default {
   data () {
     return {
       btnList: [
         {
           btnName: '保存',
-          key: 'saveData'
+          key: 'saveData',
+          loading: false
         }
       ],
       imageDataFileArray: [],
       formValidate: {
-        name: '',
+        gname: '',
         price: 0,
         reserve: 1,
-        desc: ''
+        desc: '',
+        rank: 0,
+        status: 1
       },
       ruleValidate: {
 
-      }
+      },
+      updateFlag: false
+    }
+  },
+  created () {
+    let classProductList = this.classProductList
+    if (!classProductList || !classProductList.length) {
+      this.getProductClass()
     }
   },
   components: {
@@ -58,14 +87,24 @@ export default {
     Editor,
     CommonBottom
   },
+  computed: {
+    ...mapState(['classProductList'])
+  },
   mounted () {
     this.getProductInfo(this.$route.query.id)
-    console.log(this.$route.query, '.$route.query')
+    this.updateFlag = this.$route.query.id
   },
   methods: {
+    ...mapActions(['getProductClassList']),
     // 点击底部按钮
     onBtn (item) {
       this.handleSubmit('formValidate')
+    },
+    getProductClass () {
+      this.getProductClassList({
+        vm: this,
+        callback: () => {}
+      })
     },
     handleSubmit (name) {
       this.$refs[name].validate((valid) => {
@@ -73,8 +112,27 @@ export default {
           let formValidate = this.formValidate
           formValidate.imgList = this.$refs['ImageDragableWrapper'].imageShowArray
           formValidate.content = this.$refs['editorWrapper'].content
+          const msg = this.$Message.loading({
+            content: '保存中...',
+            duration: 0
+          })
+          let btnData = this.btnList[0]
+          btnData.loading = true
           this.$httpPost({url: '/createdProduct', data: formValidate}).then(res => {
-            console.log(res, 9999999999)
+            msg()
+            if (res.data && res.data.success) {
+              this.$Message.success(this.updateFlag ? '修改成功' : '添加成功')
+              setTimeout(() => {
+                btnData.loading = false
+                this.$router.go(-1)
+              }, 2000)
+            }
+          }).catch(err => {
+            msg()
+            btnData.loading = false
+            if (err) {
+              this.$Message.error(this.updateFlag ? '修改失敗' : '添加失敗')
+            }
           })
         } else {
           this.$Message.error('Fail!')
@@ -89,10 +147,20 @@ export default {
     },
     getProductInfo (id) {
       if (!id) return
+      this.$store.state.commonLoading = true
       this.$http.get('/productItem?id=' + id).then(res => {
-        console.log(res, 66666666)
+        this.$store.state.commonLoading = false
+        let info = res.data
+        if (info) {
+          this.imageDataFileArray = info.info.imgList
+          this.$refs['editorWrapper'].content = info.info.content
+          this.formValidate = info.info
+        }
       }).catch(err => {
-        console.log(err, 4444444444)
+        this.$store.state.commonLoading = false
+        if (err) {
+          console.log(err)
+        }
       })
     }
   }
