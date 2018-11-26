@@ -16,9 +16,50 @@
                 <InputNumber class="commonInp" :precision="0"  :min="0" v-model="formValidate.price" placeholder="请输入商品价格"></InputNumber>
             </FormItem>
             <FormItem label="分类：">
-              <Select v-model="formValidate.productClass" style="width:200px">
+              <Select v-model="formValidate.productClassId" style="width:200px">
                 <Option v-for="item in classProductList" :value="item.cid" :key="item.cid">{{ item.cname }}</Option>
               </Select>
+            </FormItem>
+            <FormItem label="规格：">
+              <ProductDetailRelease v-model="releaseList" @onBlurCurrent="onBlurCurrent"></ProductDetailRelease>
+            </FormItem>
+            <FormItem label="规格明细：" v-if="releaseListShowTitle && releaseListShowTitle.length">
+              <div  class="m-b-16">
+                <span class="m-r-16">批量设置</span>
+                <Input class="m-r-8" v-model="preinstallNum.sellingPrice" @on-blur="changeBatchData('sellingPrice')" :number="true" placeholder="售价" style="width: 80px" />
+                <Input class="m-r-8" v-model="preinstallNum.inventory" @on-blur="changeBatchData('inventory')" :number="true" placeholder="库存" style="width: 80px" />
+                <Button type="primary" @click="showSetNumber">应用</Button>
+              </div>
+              <table class="table-wrapper" cellspacing="0" width="100%" cellpadding="0" border="0">
+                <thead>
+                  <tr >
+                    <th class="title-th " v-for="(item, index) in releaseListShowTitle" :key="index">
+                      {{item.AttrKeyName}}
+                    </th>
+                    <th class="title-th " >
+                      售价
+                    </th>
+                    <th class="title-th " >
+                      库存
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item, index) in showAttrData" :key="index">
+                    <td :rowspan="val.rowSpan"  v-for="(val, idx) in item" :key="idx">
+                      <div  v-if="!val.sku_costPrice_flag&&!val.sku_price_flag&&!val.sku_productQuantity_flag">
+                        {{val.attrVals&&val.attrVals.AttrValName? val.attrVals.AttrValName :''}}
+                      </div>
+                      <div v-if="val.sku_price_flag" class="p-tblr-12">
+                        <InputNumber  :min="0" :max="999999999.99" v-model="val.sku_price" style="width: 100%"></InputNumber>
+                      </div>
+                      <div v-if="val.sku_productQuantity_flag" class="p-tblr-12">
+                        <InputNumber  :min="0" :max="999999999.99"  v-model="val.sku_productQuantity" style="width: 100%"></InputNumber>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </FormItem>
             <FormItem label="库存：">
               <InputNumber class="commonInp"  :precision="0"  :min="0" v-model="formValidate.reserve" placeholder="请输入库存"></InputNumber>
@@ -48,12 +89,19 @@
 </template>
 <script>
 import ImageDragable from '@/components/common/ImageDragable/ImageDragable.vue'
+import ProductDetailRelease from '@/components/common/productSku/ProductDetailRelease.vue'
 import Editor from '@/components/common/Editor/Editor.vue'
 import CommonBottom from '@/components/common/Bottom/CommonBottom.vue'
 import { mapState, mapActions } from 'vuex'
 export default {
   data () {
     return {
+      releaseList: [], // 规格数据
+      preinstallNum: {
+        sellingPrice: '',
+        inventory: ''
+      },
+      releaseListShowTitle: [],
       btnList: [
         {
           btnName: '保存',
@@ -68,7 +116,8 @@ export default {
         reserve: 1,
         desc: '',
         rank: 0,
-        status: 1
+        status: '1',
+        productClassId: 0
       },
       ruleValidate: {
 
@@ -85,7 +134,8 @@ export default {
   components: {
     ImageDragable,
     Editor,
-    CommonBottom
+    CommonBottom,
+    ProductDetailRelease
   },
   computed: {
     ...mapState(['classProductList'])
@@ -96,6 +146,125 @@ export default {
   },
   methods: {
     ...mapActions(['getProductClassList']),
+    onBlurCurrent (data) {
+      this.getReleaseListAndShow()
+    },
+    // 渲染规格数据列表
+    getReleaseListAndShow () {
+      let releaseList = this.releaseList
+      let filterArrData = []
+      releaseList.forEach(item => {
+        if (item.attrVals && item.attrVals.length && item.AttrKeyName) {
+          let pp = []
+          item.attrVals.forEach(kk => {
+            if (!kk.AttrValName) return
+            if (kk && kk.AttrValName) {
+              pp.push(kk)
+            }
+          })
+          let data = {...item, ...{attrVals: pp}}
+          if (pp.length) {
+            filterArrData.push(data)
+          }
+        }
+      })
+      // 表头标题
+      this.releaseListShowTitle = filterArrData
+      if (!filterArrData || !filterArrData.length) {
+        this.showAttrData = []
+        this.filterArrDataList = filterArrData
+        return
+      }
+      let contentArr = []
+      let allNumber = 1
+      // 计算总共有多少行
+      filterArrData.forEach((item, index) => {
+        let attrVals = item.attrVals
+        item.attrkey_id = item.AttrKeyID ? item.AttrKeyID : 'n' + Math.floor((10 + Math.random()) * 1000000) + index
+        item.attrkey_name = item.AttrKeyName
+        if (attrVals && attrVals.length) {
+          let numData = 0
+          attrVals.forEach((val, idx) => {
+            numData++
+            val.attrval_id = val.AttrValID ? val.AttrValID : 'n' + Math.floor((10 + Math.random()) * 1000000) + idx
+            val.attrval_name = val.AttrValName
+            val.AttrValBigImg = val.AttrValBigImg
+            val.AttrValSamllImg = val.AttrValSmallImg
+          })
+          allNumber = allNumber * numData
+          item.allNumber = allNumber
+        }
+      })
+      this.allNumber = allNumber
+      // 计算合并列的数量
+      filterArrData.forEach(item => {
+        let attrVals = item.attrVals
+        if (attrVals && attrVals.length) {
+          item.rowSpan = allNumber / item.allNumber
+        }
+      })
+      // 根据总行数拼接列表数据
+      for (let k = 0; k < allNumber; k++) {
+        contentArr[k] = []
+        filterArrData.forEach((item, index) => {
+          // 根据合并的列表数进行添加数据
+          if (!(k % item.rowSpan)) {
+            let attrValsLen = item.attrVals.length
+            if (!attrValsLen) return false
+            let itemAttrVals = item.attrVals[k % attrValsLen] || {}
+            let data = {
+              rowSpan: item.rowSpan,
+              index,
+              attrval_name: itemAttrVals.AttrValName,
+              AttrValBigImg: itemAttrVals.AttrValBigImg,
+              AttrValSamllImg: itemAttrVals.AttrValSmallImg,
+              path: item.attrkey_id,
+              pathChild: itemAttrVals ? itemAttrVals.attrval_id : '',
+              attrkey_name: item.AttrKeyName,
+              currentIndexes: k % attrValsLen || 0, // 当前行的对于规格值的索引
+              attrVals: itemAttrVals
+            }
+            // 如果不是第一行
+            if (k > 0) {
+              // 找到对应的上一个循环这个规格的规格值
+              if (contentArr[k - item.rowSpan]) {
+                let allItems = contentArr[k - item.rowSpan]
+                // 在这一行中找到对应规格的位置
+                allItems.forEach(valChild => {
+                  if (valChild.index === index) {
+                    if (valChild.rowSpan) {
+                      let currentNum = valChild.currentIndexes + 1
+                      // 如果规格值是一个那么索引是0  如果上一个对应的规格的规格值是最后一个规格值的话 当前就显示第一个规格值[0] 如果都不是就 上一个基础上索引+1
+                      data.currentIndexes = attrValsLen === 1 || valChild.currentIndexes === (attrValsLen - 1) ? 0 : currentNum
+                      data.attrVals = item.attrVals[data.currentIndexes]
+                      data.pathChild = item.attrVals[data.currentIndexes].attrval_id
+                    }
+                  }
+                })
+              }
+            }
+            contentArr[k].push(data)
+          }
+        })
+        contentArr[k].push({
+          sku_price_flag: true,
+          sku_price: 0,
+          indexInp: k
+        })
+        contentArr[k].push({
+          sku_productQuantity_flag: true,
+          sku_productQuantity: 0,
+          indexInp: k
+        })
+      }
+      this.showAttrData = contentArr
+      this.filterArrDataList = filterArrData
+      // let releaseSkuAllData = this.releaseSkuAllData
+    },
+    // 应用价格和库存
+    showSetNumber () {
+
+    },
     // 点击底部按钮
     onBtn (item) {
       this.handleSubmit('formValidate')
@@ -167,5 +336,24 @@ export default {
 }
 </script>
 <style lang="less" scoped>
+.table-wrapper {
+  border: solid #e9e9e9;
+  border-width:1px 0px 0px 1px;
+  td{
+    border:solid #e9e9e9;
+    border-width:0px 1px 1px 0px;
+    text-align: center;
+  }
 
+}
+.title-th{
+  height: 40px;
+  padding: 12px 0;
+  color: #000;
+  box-sizing: border-box;
+  background-color: #f6f8fb;
+}
+.p-tblr-12{
+  padding: 12px;
+}
 </style>

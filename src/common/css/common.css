@@ -58,3 +58,23 @@
 .vertical-center-modal .ivu-modal {
   top: 0;
 }
+.p-16 {
+  padding: 16px;
+}
+.m-b-16 {
+  margin-bottom: 16px;
+}
+.m-r-16 {
+  margin-right: 16px;
+}
+.m-r-8 {
+  margin-right: 8px;
+}
+.clear:after {
+  content: '';
+  display: block;
+  clear: both;
+}
+.clear {
+  zoom: 1;
+}
