@@ -5,12 +5,12 @@
         <div class="product-edit-release-left">规格名：</div>
         <div class="product-edit-release-right">
           <Input
-          v-model.trim="item.AttrKeyName"
+          v-model.trim="item.skuName"
           @on-change="onInputChange"
           @on-focus="onInputFocus(index)"
-          @on-blur="onBlurCurrent(item.AttrKeyName, index, 'AttrKeyName')"/>
-          <Checkbox v-model="item.hasImg" true-value="1" false-value="0" @on-change="onImageRealeaseLocalChange(index)">添加规格图</Checkbox>
-          <span class="product-edit-release-tip color9">仅支持其中一组可上传多规格图（建议800*800）</span>
+          @on-blur="onBlurCurrent(item.skuName, index, 'skuName')"/>
+          <Checkbox v-model="item.hasImg" true-value="1" false-value="0" @on-change="onImageRealeaseLocalChange(index)" v-if="index === 0">添加规格图</Checkbox>
+          <span v-if="index === 0" class="product-edit-release-tip color9">仅支持其中一组可上传多规格图（建议800*800）</span>
         </div>
       </div>
       <div class="product-edit-release-white clear">
@@ -20,13 +20,13 @@
             <Upload action="" :before-upload="onUploadRelease(index,index1)">
               <Icon type="md-image" size="30" v-show="!item1.AttrValSmallImg" v-if="item.hasImg === '1'"/><img :src="(item1.AttrValSmallImg && item1.AttrValSmallImg.search('data:image') > -1)?item1.AttrValSmallImg:($http.defaults.baseURL + item1.AttrValSmallImg)" v-show="item1.AttrValSmallImg" v-if="item.hasImg === '1'">
             </Upload>
-            <Input v-model="item1.AttrValName" @on-blur="onBlurCurrent(item1.AttrValName, index1, 'AttrValName', index)" @on-change="onInputChange" icon="close-round" @on-click="onReleaseValueClick(index, index1)"/>
+            <Input v-model="item1.skuVal" @on-blur="onBlurCurrent(item1.skuVal, index1, 'skuVal', index)" @on-change="onInputChange" icon="md-close-circle"  @on-click="onReleaseValueClick(index, index1)"/>
           </div>
           <span @click="addReleaseValue(index)" class="add-value-button" :class="{'add-margin': item.attrVals&&item.attrVals.length}">添加规格值</span></div>
       </div>
       <span class="product-release-remove" @click="removeReleaseList(index)"><Icon size="20" type="ios-close" color="#fff" /></span>
     </div>
-    <div class="product-edit-release-grey"><Button type="primary" @click="addProductRelease">添加规格</Button></div>
+    <div class="product-edit-release-grey" v-if="productReleaseList.length < 5"><Button type="primary" @click="addProductRelease">添加规格</Button></div>
   </div>
 </template>
 <script>
@@ -53,11 +53,6 @@ export default {
   mounted () {
   },
   methods: {
-    // 获取你点击的文本
-    getCurrentText (index, text) {
-      this.productReleaseList[index].AttrKeyName = text
-      this.$emit('input', this.productReleaseList)
-    },
     // 规格名称聚焦的时候
     onInputFocus (index) {
       this.showReleaseListFlag = index
@@ -66,7 +61,7 @@ export default {
     onBlurCurrent (val, indexVal, key, index) {
       if (val && val.length > 30) {
         this.$Message.warning('输入的字数不能超过30个字')
-        if (key === 'AttrValName') {
+        if (key === 'skuVal') {
           this.productReleaseList[index]['attrVals'][indexVal][key] = val.slice(0, 30)
         } else {
           this.productReleaseList[indexVal][key] = val.slice(0, 30)

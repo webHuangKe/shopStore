@@ -170,6 +170,8 @@ export default {
           }
         }
       ],
+      page: 1,
+      pageSize: 20,
       productList: []
     }
   },
@@ -190,7 +192,7 @@ export default {
     // 获取商品列表
     getProductList () {
       this.$store.state.commonLoading = true
-      this.$http.get('/productList').then(res => {
+      this.$http.get('/productList?&pageSize=' + this.pageSize + '&page=' + this.page).then(res => {
         this.$store.state.commonLoading = false
         let info = res.data
         if (info && info.success) {

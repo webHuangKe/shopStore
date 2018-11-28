@@ -34,23 +34,23 @@
                 <thead>
                   <tr >
                     <th class="title-th " v-for="(item, index) in releaseListShowTitle" :key="index">
-                      {{item.AttrKeyName}}
+                      {{item.skuName}}
                     </th>
                     <th class="title-th " >
                       售价
                     </th>
-                    <th class="title-th " >
+                    <th class="title-th ">
                       库存
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="(item, index) in showAttrData" :key="index">
-                    <td :rowspan="val.rowSpan"  v-for="(val, idx) in item" :key="idx">
+                    <td :rowspan="val.rowSpan"  v-for="(val, idx) in item" :key="idx" >
                       <div  v-if="!val.sku_costPrice_flag&&!val.sku_price_flag&&!val.sku_productQuantity_flag">
-                        {{val.attrVals&&val.attrVals.AttrValName? val.attrVals.AttrValName :''}}
+                        {{val.attrVals&&val.attrVals.skuVal? val.attrVals.skuVal :''}}
                       </div>
-                      <div v-if="val.sku_price_flag" class="p-tblr-12">
+                      <div v-if="val.sku_price_flag" class="p-tblr-12" >
                         <InputNumber  :min="0" :max="999999999.99" v-model="val.sku_price" style="width: 100%"></InputNumber>
                       </div>
                       <div v-if="val.sku_productQuantity_flag" class="p-tblr-12">
@@ -84,7 +84,7 @@
                 <Editor ref="editorWrapper"></Editor>
             </FormItem>
         </Form>
-        <CommonBottom @on-click="onBtn" :btnList="btnList"></CommonBottom>
+        <CommonBottom @onClick="onBtn" :btnList="btnList"></CommonBottom>
     </div>
 </template>
 <script>
@@ -153,12 +153,13 @@ export default {
     getReleaseListAndShow () {
       let releaseList = this.releaseList
       let filterArrData = []
+      // 循环获取
       releaseList.forEach(item => {
-        if (item.attrVals && item.attrVals.length && item.AttrKeyName) {
+        if (item.attrVals && item.attrVals.length && item.skuName) {
           let pp = []
           item.attrVals.forEach(kk => {
-            if (!kk.AttrValName) return
-            if (kk && kk.AttrValName) {
+            if (!kk.skuVal) return
+            if (kk && kk.skuVal) {
               pp.push(kk)
             }
           })
@@ -180,14 +181,12 @@ export default {
       // 计算总共有多少行
       filterArrData.forEach((item, index) => {
         let attrVals = item.attrVals
-        item.attrkey_id = item.AttrKeyID ? item.AttrKeyID : 'n' + Math.floor((10 + Math.random()) * 1000000) + index
-        item.attrkey_name = item.AttrKeyName
+        item.skuId = item.skuId || 'n' + Math.floor((10 + Math.random()) * 1000000) + index
         if (attrVals && attrVals.length) {
           let numData = 0
           attrVals.forEach((val, idx) => {
             numData++
-            val.attrval_id = val.AttrValID ? val.AttrValID : 'n' + Math.floor((10 + Math.random()) * 1000000) + idx
-            val.attrval_name = val.AttrValName
+            val.skuValId = val.skuValId || 'n' + Math.floor((10 + Math.random()) * 1000000) + idx
             val.AttrValBigImg = val.AttrValBigImg
             val.AttrValSamllImg = val.AttrValSmallImg
           })
@@ -215,12 +214,12 @@ export default {
             let data = {
               rowSpan: item.rowSpan,
               index,
-              attrval_name: itemAttrVals.AttrValName,
+              skuVal: itemAttrVals.skuVal,
               AttrValBigImg: itemAttrVals.AttrValBigImg,
               AttrValSamllImg: itemAttrVals.AttrValSmallImg,
-              path: item.attrkey_id,
-              pathChild: itemAttrVals ? itemAttrVals.attrval_id : '',
-              attrkey_name: item.AttrKeyName,
+              path: item.skuId,
+              pathChild: itemAttrVals ? itemAttrVals.skuValId : '',
+              skuName: item.skuName,
               currentIndexes: k % attrValsLen || 0, // 当前行的对于规格值的索引
               attrVals: itemAttrVals
             }
@@ -237,7 +236,7 @@ export default {
                       // 如果规格值是一个那么索引是0  如果上一个对应的规格的规格值是最后一个规格值的话 当前就显示第一个规格值[0] 如果都不是就 上一个基础上索引+1
                       data.currentIndexes = attrValsLen === 1 || valChild.currentIndexes === (attrValsLen - 1) ? 0 : currentNum
                       data.attrVals = item.attrVals[data.currentIndexes]
-                      data.pathChild = item.attrVals[data.currentIndexes].attrval_id
+                      data.pathChild = item.attrVals[data.currentIndexes].skuValId
                     }
                   }
                 })
@@ -258,8 +257,79 @@ export default {
         })
       }
       this.showAttrData = contentArr
+      console.log(contentArr, 'contentArr')
       this.filterArrDataList = filterArrData
       // let releaseSkuAllData = this.releaseSkuAllData
+    },
+    // 每行的数据 处理规格数据
+    disposeSpecificationData (item, firstFn) {
+      let arr = []
+      let skuVal = []
+      let skuName = []
+      let data = {}
+      item.forEach(val => {
+        if (val.rowSpan) {
+          arr.push(val.path + '_' + val.pathChild)
+          skuVal.push(val.skuVal)
+          skuName.push(val.skuName)
+          data.skuVal = val.skuVal
+          data.skuName = val.skuName
+        }
+        if (val.sku_costPrice_flag) {
+          data.sku_costPrice = val.sku_costPrice
+          data.skuAttrId = val.skuAttrId || 0
+        }
+        if (val.sku_price_flag) {
+          data.price = val.sku_price
+        }
+        if (val.sku_productQuantity_flag) {
+          data.productQuantity = val.sku_productQuantity
+        }
+      })
+      data.path = arr.join(',')
+      data.skuVal = skuVal
+      data.skuName = skuName
+      firstFn && firstFn(data)
+    },
+    // 获取所有可能的规格组合
+    getSpecificationDetails () {
+      let skuPostArray = []
+      let releaseList = this.filterArrDataList
+      let overallData = [] // 完整的数据
+      // 总共有多少个规格名
+      let releaseListLen = releaseList.length
+      // 循环规格列表  获取对应的规格组合和对应的价格库存等 循环获取每一行
+      this.showAttrData.forEach((item, index) => {
+        // 当前行可以输入的规格值有多少个
+        let currentNumIt = item.length - 2
+        // 大的换行
+        if (releaseListLen === currentNumIt) {
+          overallData.push(item)
+          this.disposeSpecificationData(item, (obj) => {
+            skuPostArray.push({
+              ...obj
+            })
+          })
+        // 如果当前行 规格值数量小于最大值
+        } else if (releaseListLen > currentNumIt) {
+          // 用于保存当前行对应的规格组合 就像releaseListLen === currentNumIt相等的时候一样处理数据
+          let curretItem = []
+          // 查看相差多少个规格值
+          let differenceNum = releaseListLen - currentNumIt
+          for (let i = 0; i < differenceNum; i++) {
+            curretItem.push(overallData[index - 1][i])
+          }
+          curretItem = [...curretItem, ...item]
+          overallData.push(curretItem)
+          // 循环行，获取每一项规格值
+          this.disposeSpecificationData(curretItem, (obj) => {
+            skuPostArray.push({
+              ...obj
+            })
+          })
+        }
+      })
+      return skuPostArray
     },
     // 应用价格和库存
     showSetNumber () {
@@ -276,37 +346,40 @@ export default {
       })
     },
     handleSubmit (name) {
-      this.$refs[name].validate((valid) => {
-        if (valid) {
-          let formValidate = this.formValidate
-          formValidate.imgList = this.$refs['ImageDragableWrapper'].imageShowArray
-          formValidate.content = this.$refs['editorWrapper'].content
-          const msg = this.$Message.loading({
-            content: '保存中...',
-            duration: 0
-          })
-          let btnData = this.btnList[0]
-          btnData.loading = true
-          this.$httpPost({url: '/createdProduct', data: formValidate}).then(res => {
-            msg()
-            if (res.data && res.data.success) {
-              this.$Message.success(this.updateFlag ? '修改成功' : '添加成功')
-              setTimeout(() => {
-                btnData.loading = false
-                this.$router.go(-1)
-              }, 2000)
-            }
-          }).catch(err => {
-            msg()
-            btnData.loading = false
-            if (err) {
-              this.$Message.error(this.updateFlag ? '修改失敗' : '添加失敗')
-            }
-          })
-        } else {
-          this.$Message.error('Fail!')
-        }
-      })
+      let skuInfo = this.getSpecificationDetails()
+      console.log(skuInfo, 'skuInfo')
+
+      // this.$refs[name].validate((valid) => {
+      //   if (valid) {
+      //     let formValidate = this.formValidate
+      //     formValidate.imgList = this.$refs['ImageDragableWrapper'].imageShowArray
+      //     formValidate.content = this.$refs['editorWrapper'].content
+      //     const msg = this.$Message.loading({
+      //       content: '保存中...',
+      //       duration: 0
+      //     })
+      //     let btnData = this.btnList[0]
+      //     btnData.loading = true
+      //     this.$httpPost({url: '/createdProduct', data: formValidate}).then(res => {
+      //       msg()
+      //       if (res.data && res.data.success) {
+      //         this.$Message.success(this.updateFlag ? '修改成功' : '添加成功')
+      //         setTimeout(() => {
+      //           btnData.loading = false
+      //           this.$router.go(-1)
+      //         }, 2000)
+      //       }
+      //     }).catch(err => {
+      //       msg()
+      //       btnData.loading = false
+      //       if (err) {
+      //         this.$Message.error(this.updateFlag ? '修改失敗' : '添加失敗')
+      //       }
+      //     })
+      //   } else {
+      //     this.$Message.error('Fail!')
+      //   }
+      // })
     },
     handleReset (name) {
       this.$refs[name].resetFields()
