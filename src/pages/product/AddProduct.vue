@@ -51,10 +51,10 @@
                         {{val.attrVals&&val.attrVals.skuVal? val.attrVals.skuVal :''}}
                       </div>
                       <div v-if="val.sku_price_flag" class="p-tblr-12" >
-                        <InputNumber  :min="0" :max="999999999.99" v-model="val.sku_price" style="width: 100%"></InputNumber>
+                        <InputNumber  :min="0" :max="999999999.99" v-model="val.price" style="width: 100%"></InputNumber>
                       </div>
                       <div v-if="val.sku_productQuantity_flag" class="p-tblr-12">
-                        <InputNumber  :min="0" :max="999999999.99"  v-model="val.sku_productQuantity" style="width: 100%"></InputNumber>
+                        <InputNumber  :min="0" :max="999999999.99"  v-model="val.reserve" style="width: 100%"></InputNumber>
                       </div>
                     </td>
                   </tr>
@@ -122,7 +122,8 @@ export default {
       ruleValidate: {
 
       },
-      updateFlag: false
+      updateFlag: 0,
+      skuGroupList: [] // 编辑时 获取到已有的规格组合
     }
   },
   created () {
@@ -218,7 +219,7 @@ export default {
               AttrValBigImg: itemAttrVals.AttrValBigImg,
               AttrValSamllImg: itemAttrVals.AttrValSmallImg,
               path: item.skuId,
-              pathChild: itemAttrVals ? itemAttrVals.skuValId : '',
+              skuValId: itemAttrVals ? itemAttrVals.skuValId : '',
               skuName: item.skuName,
               currentIndexes: k % attrValsLen || 0, // 当前行的对于规格值的索引
               attrVals: itemAttrVals
@@ -236,7 +237,7 @@ export default {
                       // 如果规格值是一个那么索引是0  如果上一个对应的规格的规格值是最后一个规格值的话 当前就显示第一个规格值[0] 如果都不是就 上一个基础上索引+1
                       data.currentIndexes = attrValsLen === 1 || valChild.currentIndexes === (attrValsLen - 1) ? 0 : currentNum
                       data.attrVals = item.attrVals[data.currentIndexes]
-                      data.pathChild = item.attrVals[data.currentIndexes].skuValId
+                      data.skuValId = item.attrVals[data.currentIndexes].skuValId
                     }
                   }
                 })
@@ -247,52 +248,86 @@ export default {
         })
         contentArr[k].push({
           sku_price_flag: true,
-          sku_price: 0,
+          price: 0,
           indexInp: k
         })
         contentArr[k].push({
           sku_productQuantity_flag: true,
-          sku_productQuantity: 0,
+          reserve: 0,
           indexInp: k
         })
       }
       this.showAttrData = contentArr
-      console.log(contentArr, 'contentArr')
       this.filterArrDataList = filterArrData
-      // let releaseSkuAllData = this.releaseSkuAllData
+      let skuGroupList = this.skuGroupList
+      if (skuGroupList && skuGroupList.length) {
+        let showSkuData = []
+        this.getSpecificationDetails((itemVal, itemInfo) => {
+          let q = this.getSkuOldData(itemInfo)
+          itemVal.forEach(k => {
+            k.skuAttrId = q.skuAttrId
+            k.price = q.price
+            k.reserve = q.reserve
+          })
+          showSkuData.push(itemVal)
+        })
+      }
+    },
+    // 某一行 获取原来的售价库存的值
+    getSkuOldData (currentItem) {
+      let dataNum = {}
+      if (currentItem && !currentItem.length) return dataNum
+      let skuGroupList = this.skuGroupList
+      let dataArr = []
+      // 找到规格值的ID
+      currentItem.forEach(item => {
+        if (item.rowSpan) {
+          dataArr.push(item.skuValId)
+        }
+      })
+      skuGroupList.forEach(oldVal => {
+        let arr = oldVal.group.split(',')
+        let num = 0
+        arr.forEach(item => {
+          item = item - 0
+          let val = dataArr.find(l => {
+            return l === item
+          })
+          if (val) {
+            num++
+          }
+        })
+        if (num === dataArr.length && num === arr.length) {
+          dataNum = {
+            skuAttrId: oldVal.skuAttrId,
+            price: oldVal.price || 0,
+            reserve: oldVal.reserve || 0
+          }
+          return false
+        }
+      })
+      return dataNum
     },
     // 每行的数据 处理规格数据
     disposeSpecificationData (item, firstFn) {
       let arr = []
-      let skuVal = []
-      let skuName = []
       let data = {}
       item.forEach(val => {
         if (val.rowSpan) {
-          arr.push(val.path + '_' + val.pathChild)
-          skuVal.push(val.skuVal)
-          skuName.push(val.skuName)
-          data.skuVal = val.skuVal
-          data.skuName = val.skuName
-        }
-        if (val.sku_costPrice_flag) {
-          data.sku_costPrice = val.sku_costPrice
-          data.skuAttrId = val.skuAttrId || 0
+          arr.push(val.skuValId)
         }
         if (val.sku_price_flag) {
-          data.price = val.sku_price
+          data.price = val.price
         }
         if (val.sku_productQuantity_flag) {
-          data.productQuantity = val.sku_productQuantity
+          data.reserve = val.reserve
         }
       })
-      data.path = arr.join(',')
-      data.skuVal = skuVal
-      data.skuName = skuName
+      data.path = arr
       firstFn && firstFn(data)
     },
     // 获取所有可能的规格组合
-    getSpecificationDetails () {
+    getSpecificationDetails (fn) {
       let skuPostArray = []
       let releaseList = this.filterArrDataList
       let overallData = [] // 完整的数据
@@ -305,11 +340,15 @@ export default {
         // 大的换行
         if (releaseListLen === currentNumIt) {
           overallData.push(item)
-          this.disposeSpecificationData(item, (obj) => {
-            skuPostArray.push({
-              ...obj
+          if (fn) {
+            fn(item, item)
+          } else {
+            this.disposeSpecificationData(item, (obj) => {
+              skuPostArray.push({
+                ...obj
+              })
             })
-          })
+          }
         // 如果当前行 规格值数量小于最大值
         } else if (releaseListLen > currentNumIt) {
           // 用于保存当前行对应的规格组合 就像releaseListLen === currentNumIt相等的时候一样处理数据
@@ -321,12 +360,16 @@ export default {
           }
           curretItem = [...curretItem, ...item]
           overallData.push(curretItem)
-          // 循环行，获取每一项规格值
-          this.disposeSpecificationData(curretItem, (obj) => {
-            skuPostArray.push({
-              ...obj
+          if (fn) {
+            fn(item, curretItem)
+          } else {
+            // 循环行，获取每一项规格值
+            this.disposeSpecificationData(curretItem, (obj) => {
+              skuPostArray.push({
+                ...obj
+              })
             })
-          })
+          }
         }
       })
       return skuPostArray
@@ -346,40 +389,70 @@ export default {
       })
     },
     handleSubmit (name) {
-      let skuInfo = this.getSpecificationDetails()
-      console.log(skuInfo, 'skuInfo')
-
-      // this.$refs[name].validate((valid) => {
-      //   if (valid) {
-      //     let formValidate = this.formValidate
-      //     formValidate.imgList = this.$refs['ImageDragableWrapper'].imageShowArray
-      //     formValidate.content = this.$refs['editorWrapper'].content
-      //     const msg = this.$Message.loading({
-      //       content: '保存中...',
-      //       duration: 0
-      //     })
-      //     let btnData = this.btnList[0]
-      //     btnData.loading = true
-      //     this.$httpPost({url: '/createdProduct', data: formValidate}).then(res => {
-      //       msg()
-      //       if (res.data && res.data.success) {
-      //         this.$Message.success(this.updateFlag ? '修改成功' : '添加成功')
-      //         setTimeout(() => {
-      //           btnData.loading = false
-      //           this.$router.go(-1)
-      //         }, 2000)
-      //       }
-      //     }).catch(err => {
-      //       msg()
-      //       btnData.loading = false
-      //       if (err) {
-      //         this.$Message.error(this.updateFlag ? '修改失敗' : '添加失敗')
-      //       }
-      //     })
-      //   } else {
-      //     this.$Message.error('Fail!')
-      //   }
-      // })
+      let updateFlag = this.updateFlag
+      this.$refs[name].validate((valid) => {
+        if (valid) {
+          let formValidate = this.formValidate
+          formValidate.imgList = this.$refs['ImageDragableWrapper'].imageShowArray
+          formValidate.content = this.$refs['editorWrapper'].content
+          const msg = this.$Message.loading({
+            content: '保存中...',
+            duration: 0
+          })
+          let btnData = this.btnList[0]
+          btnData.loading = true
+          if (updateFlag) {
+            formValidate.gid = updateFlag
+          }
+          this.$httpPost({url: '/createdProduct', data: formValidate}).then(res => {
+            if (res.data && res.data.success) {
+              let filterArrDataList = this.filterArrDataList
+              if (filterArrDataList && filterArrDataList.length) {
+                let skuInfoList = this.getSpecificationDetails()
+                this.$httpPost({url: '/addProductSku',
+                  data: {
+                    skuInfoList,
+                    filterArrDataList,
+                    gid: updateFlag || res.data.gid
+                  }}).then(skuRes => {
+                  msg()
+                  let skuData = skuRes.data
+                  if (skuData && skuData.success) {
+                    this.$Message.success(updateFlag ? '修改成功' : '添加成功')
+                    setTimeout(() => {
+                      btnData.loading = false
+                      this.$router.go(-1)
+                    }, 1000)
+                  }
+                }).catch(err => {
+                  msg()
+                  btnData.loading = false
+                  if (err) {
+                    this.$Message.error(updateFlag ? '修改失敗' : '添加失敗')
+                  }
+                })
+              } else {
+                msg()
+                this.$Message.success(updateFlag ? '修改成功' : '添加成功')
+                setTimeout(() => {
+                  btnData.loading = false
+                  this.$router.go(-1)
+                }, 2000)
+              }
+            } else {
+              msg()
+            }
+          }).catch(err => {
+            msg()
+            btnData.loading = false
+            if (err) {
+              this.$Message.error(updateFlag ? '修改失敗' : '添加失敗')
+            }
+          })
+        } else {
+          this.$Message.error('Fail!')
+        }
+      })
     },
     handleReset (name) {
       this.$refs[name].resetFields()
@@ -394,9 +467,15 @@ export default {
         this.$store.state.commonLoading = false
         let info = res.data
         if (info) {
-          this.imageDataFileArray = info.info.imgList
+          this.imageDataFileArray = info.imgList
           this.$refs['editorWrapper'].content = info.info.content
           this.formValidate = info.info
+          if (info.skuNameList && info.skuNameList.length) {
+            this.releaseList = info.skuNameList || []
+            this.skuGroupList = info.skuList || []
+            this.releaseList.reverse()
+            this.getReleaseListAndShow()
+          }
         }
       }).catch(err => {
         this.$store.state.commonLoading = false
