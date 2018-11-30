@@ -389,6 +389,10 @@ export default {
       })
     },
     handleSubmit (name) {
+      let skuInfoList = this.getSpecificationDetails()
+      console.log(skuInfoList, 'skuInfoList')
+      console.log(this.filterArrDataList, 'skuInfoList')
+      return
       let updateFlag = this.updateFlag
       this.$refs[name].validate((valid) => {
         if (valid) {
