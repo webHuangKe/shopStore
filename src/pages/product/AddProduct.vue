@@ -150,6 +150,9 @@ export default {
     onBlurCurrent (data) {
       this.getReleaseListAndShow()
     },
+    changeBatchData (key) {
+
+    },
     // 渲染规格数据列表
     getReleaseListAndShow () {
       let releaseList = this.releaseList
@@ -324,6 +327,25 @@ export default {
         }
       })
       data.path = arr
+      let skuGroupList = this.skuGroupList
+      if (skuGroupList && skuGroupList.length) {
+        let val = this.skuGroupList.find(val => {
+          let gList = val.group.split(',')
+          let num = 0
+          gList.forEach(vItem => {
+            let uu = arr.find(ww => {
+              let x = Number(ww)
+              let f = Number(vItem)
+              return x === f
+            })
+            if (uu) {
+              num++
+            }
+          })
+          return num === gList.length && num === arr.length
+        })
+        if (val && val.skuAttrId) data.skuAttrId = val.skuAttrId
+      }
       firstFn && firstFn(data)
     },
     // 获取所有可能的规格组合
@@ -389,10 +411,6 @@ export default {
       })
     },
     handleSubmit (name) {
-      let skuInfoList = this.getSpecificationDetails()
-      console.log(skuInfoList, 'skuInfoList')
-      console.log(this.filterArrDataList, 'skuInfoList')
-      return
       let updateFlag = this.updateFlag
       this.$refs[name].validate((valid) => {
         if (valid) {
@@ -417,8 +435,9 @@ export default {
                   data: {
                     skuInfoList,
                     filterArrDataList,
-                    gid: updateFlag || res.data.gid
+                    gid: Number(updateFlag) || Number(res.data.gid)
                   }}).then(skuRes => {
+                  console.log(updateFlag)
                   msg()
                   let skuData = skuRes.data
                   if (skuData && skuData.success) {
@@ -428,11 +447,12 @@ export default {
                       this.$router.go(-1)
                     }, 1000)
                   }
-                }).catch(err => {
+                }).catch(error => {
                   msg()
+                  console.log(error, 'error')
                   btnData.loading = false
-                  if (err) {
-                    this.$Message.error(updateFlag ? '修改失敗' : '添加失敗')
+                  if (error) {
+                    this.$Message.error(updateFlag ? '修改失敗' + JSON.stringify(error) : '添加失敗')
                   }
                 })
               } else {
@@ -450,6 +470,7 @@ export default {
             msg()
             btnData.loading = false
             if (err) {
+              console.log(err, 'err')
               this.$Message.error(updateFlag ? '修改失敗' : '添加失敗')
             }
           })
